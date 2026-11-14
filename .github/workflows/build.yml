@@ -18,18 +18,23 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
-    - name: Find and Grant execute permission for gradlew
+    - name: Locate project and build APK
       run: |
-        if [ -f "./gradlew" ]; then
-          chmod +x ./gradlew
-          ./gradlew assembleDebug --stacktrace --info
-        elif [ -f "app/gradlew" ]; then
-          chmod +x app/gradlew
-          cd app && ./gradlew assembleDebug --stacktrace --info
-        else
-          echo "gradlew not found!"
+        echo "Searching for gradlew..."
+        GRADLE_PATH=$(find . -name "gradlew" -type f -print -quit)
+        
+        if [ -z "$GRADLE_PATH" ]; then
+          echo "Error: gradlew file not found anywhere in the repository!"
           exit 1
         fi
+        
+        PROJECT_DIR=$(dirname "$GRADLE_PATH")
+        echo "Found gradlew at: $GRADLE_PATH"
+        echo "Project directory is: $PROJECT_DIR"
+        
+        cd "$PROJECT_DIR"
+        chmod +x gradlew
+        ./gradlew assembleDebug --stacktrace --info
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
